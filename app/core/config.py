@@ -1,17 +1,22 @@
 import os
 from typing import List, Optional
+import logging
 
 from dotenv import load_dotenv, find_dotenv
 from pydantic import AnyHttpUrl, PostgresDsn
 from pydantic_settings import BaseSettings
-from app.utils import logger
 
+logger = logging.getLogger("faq")
 load_dotenv(find_dotenv())
 
 class Settings(BaseSettings):
     ENVIRONMENT: str
     PROJECT_NAME: str = "SmartTask FAQ"
     API_V1_STR: str = "/api/v1"
+    LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
+
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
+    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
 
     # Security settings
     SECRET_KEY: str
@@ -21,6 +26,8 @@ class Settings(BaseSettings):
     # CORS settings
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:8000",
                                               "http://127.0.0.1:8000", ]
+    # Path to ChromaDB
+    CHROMA_PATH: str = os.getenv('CHROMA_PATH', './chroma_db')
 
     # Redis
     REDIS_HOST: str = os.getenv('REDIS_HOST', 'localhost')
@@ -52,8 +59,11 @@ class Settings(BaseSettings):
 
 # Initialize settings with logging
 try:
+    # Use a local logger here to avoid importing app.utils and creating a circular import
+
     settings = Settings()
     logger.info("Settings loaded successfully")
 except Exception as e:
+
     logger.error(f"Error loading settings: {e}")
     raise
