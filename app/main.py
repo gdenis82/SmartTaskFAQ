@@ -1,12 +1,11 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import text
-from sqlalchemy.orm import Session
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
 from app.core.config import settings
-from app.db.session import get_db
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -28,24 +27,11 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Include the API router
+# Versioned API (v1)
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def root():
-    return {
-        "message": "Welcome to the SmartTask FAQ",
-        "documentation": "/docs",
-        "api_version": settings.API_V1_STR,
-    }
+    # Перенаправляем на статическую страницу index.html
+    return RedirectResponse(url="/static/index.html")
 
-@app.get("/health")
-async def health(db: Session = Depends(get_db)):
-    try:
-        db.execute(text("SELECT 1"))
-        return {
-            "status": "ok",
-            "service": "smart-task-faq",
-            "timestamp": __import__("datetime").datetime.utcnow().isoformat()
-        }
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
