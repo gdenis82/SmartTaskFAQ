@@ -1,6 +1,7 @@
 services:
   backend:
     container_name: backend-faq
+    restart: unless-stopped
     build: .
     ports:
       - "8000:8000"
@@ -19,6 +20,7 @@ services:
   db:
     container_name: postgres-faq
     image: postgres:14
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -38,6 +40,7 @@ services:
 
   redis:
     container_name: redis-faq
+    restart: unless-stopped
     image: redis:7-alpine
     networks:
       - smart-task-network
