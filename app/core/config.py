@@ -1,13 +1,11 @@
-
-import logging
 import os
 from typing import List, Optional
 
 from dotenv import load_dotenv, find_dotenv
 from pydantic import AnyHttpUrl, PostgresDsn
 from pydantic_settings import BaseSettings
+from app.utils import logger
 
-logger = logging.getLogger(__name__)
 load_dotenv(find_dotenv())
 
 class Settings(BaseSettings):
