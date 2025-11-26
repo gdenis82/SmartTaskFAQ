@@ -19,11 +19,10 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", '')
     EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
 
-    ANSWER_PROMPT: str = os.getenv(
-        "ANSWER_PROMPT",
-        """Вы — эксперт по продукту SmartTask. Отвечайте чётко и по делу. 
-        Используйте ТОЛЬКО информацию из приведённого контекста. 
-        Если в контексте нет ответа — напишите: «Извините, я не знаю ответа на этот вопрос».""")
+
+
+    ANSWER_PROMPT: str = """Ты помощник, который отвечает на вопросы пользователей SmartTask, 
+    используя предоставленный контекст из документации."""
 
     # Security settings
     SECRET_KEY: str
@@ -64,6 +63,9 @@ class Settings(BaseSettings):
             f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
+
+        with open(os.getenv("ANSWER_PROMPT_PATH"), encoding="utf-8") as f:
+            self.ANSWER_PROMPT = f.read()
 
 
 
