@@ -85,6 +85,7 @@
    ```bash
    python -m app.eval
    ```
+10. Добавление новых данных в базу знаний (поддерживает фалы `.md`, `.txt`, `.pdf`): [FastAPI Docs](http://localhost:8000/docs#/default/upload_documents_api_v1_documents_post)
 
 ## Структура проекта
 ```
