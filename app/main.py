@@ -9,7 +9,7 @@ from app.api.router import api_router
 from app.core.config import settings
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(fast_app: FastAPI):
     # Startup выполняется при запуске приложения
     from app.rag import ingest_documents
     ingest_documents(doc_dir=settings.DOCUMENTS_PATH)
@@ -19,7 +19,7 @@ app = FastAPI(
     description="RAG-based FAQ service for SmartTask documentation",
     version="1.0",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Set up CORS middleware
