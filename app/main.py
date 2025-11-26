@@ -12,7 +12,7 @@ from app.core.config import settings
 async def lifespan(fast_app: FastAPI):
     # Startup выполняется при запуске приложения
     from app.rag import ingest_documents
-    ingest_documents(doc_dir=settings.DOCUMENTS_PATH)
+    await ingest_documents(doc_dir=settings.DOCUMENTS_PATH)
     yield
 app = FastAPI(
     title=settings.PROJECT_NAME,
