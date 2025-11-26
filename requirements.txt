@@ -2,7 +2,6 @@ fastapi
 alembic
 uvicorn[standard]
 gunicorn
-anthropic
 openai
 chromadb
 langchain
