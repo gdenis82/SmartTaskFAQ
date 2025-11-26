@@ -9,13 +9,30 @@ services:
       - .env
     environment:
       - ENVIRONMENT=production
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+
     depends_on:
       - db
       - redis
+      - chroma
     volumes:
       - ./data:/app/data
     networks:
       - smart-task-network
+
+  chroma:
+    container_name: chroma-faq
+    image: chromadb/chroma:latest
+    restart: unless-stopped
+    environment:
+      - IS_PERSISTENT=TRUE
+    volumes:
+      - ./data/chroma:/data
+    networks:
+      - smart-task-network
+    ports:
+      - "8001:8000"
 
   db:
     container_name: postgres-faq
