@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -6,12 +8,18 @@ from starlette.middleware.cors import CORSMiddleware
 from app.api.router import api_router
 from app.core.config import settings
 
-
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup выполняется при запуске приложения
+    from app.rag import ingest_documents
+    ingest_documents(doc_dir=settings.DOCUMENTS_PATH)
+    yield
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="RAG-based FAQ service for SmartTask documentation",
     version="1.0",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan
 )
 
 # Set up CORS middleware
@@ -29,6 +37,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Include the API router
 # Versioned API (v1)
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
 
 @app.get("/")
 async def root():
