@@ -30,12 +30,6 @@ def evaluate():
     print("🔍 Запуск eval...")
     passed = 0
 
-    dir_name = os.path.dirname(__file__).replace("app", settings.DOCUMENTS_PATH)
-    try:
-        ingest_documents(doc_dir=dir_name)
-    except Exception as e:
-        print(f"⚠️ Не удалось выполнить импорт документов: {e}")
-
     for i, case in enumerate(TEST_CASES, 1):
         print(f"\nТест {i}: {case['question']}")
         try:

@@ -53,6 +53,18 @@ class Settings(BaseSettings):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        # Determine project root (independent from current working dir)
+        core_dir = os.path.dirname(__file__)
+        app_dir = os.path.abspath(os.path.join(core_dir, ".."))
+        project_root = os.path.abspath(os.path.join(app_dir, ".."))
+
+        # Normalize paths to be absolute relative to project root when given as relative
+        if not os.path.isabs(self.CHROMA_PATH):
+            self.CHROMA_PATH = os.path.abspath(os.path.join(project_root, self.CHROMA_PATH))
+
+        if not os.path.isabs(self.DOCUMENTS_PATH):
+            self.DOCUMENTS_PATH = os.path.abspath(os.path.join(project_root, self.DOCUMENTS_PATH))
+
         # If in development and a local DB URL is provided, prefer it
         if (self.ENVIRONMENT or '').lower() == 'development':
             logger.info("Using development (backend running locally)")
@@ -64,6 +76,8 @@ class Settings(BaseSettings):
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
         prompt_path = os.getenv("ANSWER_PROMPT_PATH", "")
+        if prompt_path and not os.path.isabs(prompt_path):
+            prompt_path = os.path.abspath(os.path.join(project_root, prompt_path))
         if os.path.isfile(prompt_path):
             with open(prompt_path, encoding="utf-8") as f:
                 self.ANSWER_PROMPT = f.read()
