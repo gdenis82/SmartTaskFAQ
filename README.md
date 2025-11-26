@@ -79,11 +79,11 @@
 7. База данных запросов доступна через веб-интерфейс adminer по адресу: `http://localhost:8089
 8. Выполнить тесты
     ```bash
-    python -m pytest -v tests/
+    docker-compose run --rm backend pytest -v tests/
     `````
 9. Eval для проверки качества ответов
    ```bash
-   python -m app.eval
+   docker-compose run --rm backend python -m app.eval
    ```
 10. Добавление новых данных в базу знаний (поддерживает фалы `.md`, `.txt`, `.pdf`): [FastAPI Docs](http://localhost:8000/docs#/default/upload_documents_api_v1_documents_post)
 
