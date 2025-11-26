@@ -1,7 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, func
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from sqlalchemy import Column, Integer, String, Text
+from app.db.base_class import Base
 
 class QueryLog(Base):
     __tablename__ = 'query_logs'

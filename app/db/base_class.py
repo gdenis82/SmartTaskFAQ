@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
+from sqlalchemy.orm import as_declarative, declared_attr
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import registry
 from sqlalchemy import Column, DateTime
