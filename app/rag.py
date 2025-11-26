@@ -47,7 +47,9 @@ async def chunk_text(text: str, source_name: str) -> List[Dict]:
     chunks = splitter.split_text(text)
     return [{"text": chunk, "source": source_name} for chunk in chunks]
 
-async def ingest_documents(doc_dir: str = None, file_paths: Optional[List[str]] = None, force: bool = False) -> Tuple[int, int, List[str]]:
+
+async def ingest_documents(doc_dir: str = None, file_paths: Optional[List[str]] = None, force: bool = False) -> Tuple[
+    int, int, List[str]]:
     """Добавление документов в Chroma.
 
     Аргументы:
@@ -117,6 +119,7 @@ async def ingest_documents(doc_dir: str = None, file_paths: Optional[List[str]] 
     logging.debug(f"Добавлено {len(texts)} чанков из {len(set(sources))} документов.")
     return len(texts), len(set(processed_files)), processed_files
 
+
 async def retrieve_context(query: str, k: int = 3) -> List[Dict[str, str]]:
     results = collection.query(
         query_texts=[query],
@@ -130,9 +133,10 @@ async def retrieve_context(query: str, k: int = 3) -> List[Dict[str, str]]:
         for doc, meta in zip(results["documents"][0], results["metadatas"][0])
     ]
 
+
 async def generate_answer(question: str, context_list: List[Dict[str, str]]) -> Tuple[str, List[str], int, int]:
     context_text = "\n\n".join(
-        f"[{i+1}] {c['text']}" for i, c in enumerate(context_list)
+        f"[{i + 1}] {c['text']}" for i, c in enumerate(context_list)
     )
     sources = list({c["source"] for c in context_list})
 
@@ -145,24 +149,20 @@ async def generate_answer(question: str, context_list: List[Dict[str, str]]) -> 
     
     Ответ:"""
 
-    if settings.OPENAI_API_KEY and settings.OPENAI_API_KEY.strip():
-
-        try:
-            response = llm_client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
+    try:
+        response = llm_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
                 {"role": "system", "content": settings.ANSWER_PROMPT},
                 {"role": "user", "content": prompt},
-                ],
-                max_tokens=1024,
-                temperature=0.0,
-            )
-            answer = response.choices[0].message.content
-            input_tokens = response.usage.prompt_tokens
-            output_tokens = response.usage.completion_tokens
-        except Exception as e:
-            raise RuntimeError(f"OpenAI error: {e}")
-    else:
-        raise ValueError("OPENAI_API_KEY не задан в настройках.")
+            ],
+            max_tokens=1024,
+            temperature=0.0,
+        )
+        answer = response.choices[0].message.content
+        input_tokens = response.usage.prompt_tokens
+        output_tokens = response.usage.completion_tokens
+    except Exception as e:
+        raise RuntimeError(f"OpenAI error: {e}")
 
     return answer, sources, input_tokens, output_tokens
