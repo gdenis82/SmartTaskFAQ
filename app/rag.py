@@ -14,7 +14,10 @@ from app.utils import logging, extract_text_from_path
 COLLECTION_NAME = "smarttask_docs"
 
 # Инициализация Chroma
-chroma_client = chromadb.PersistentClient(path=settings.CHROMA_PATH)
+if settings.CHROMA_HOST:
+    chroma_client = chromadb.HttpClient(host=settings.CHROMA_HOST, port=settings.CHROMA_PORT)
+else:
+    chroma_client = chromadb.PersistentClient(path=settings.CHROMA_PATH)
 
 # Embedding function
 if settings.OPENAI_API_KEY and settings.OPENAI_API_KEY.strip():
