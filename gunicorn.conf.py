@@ -23,16 +23,7 @@ port = os.getenv("PORT", "8000")
 bind = os.getenv("BIND", f"{host}:{port}")
 
 # --- Workers ---
-workers_per_core = _get_float_env("WORKERS_PER_CORE", "1.0")
-cores = multiprocessing.cpu_count()
-default_workers = max(int(workers_per_core * cores), 2)
-
-web_concurrency = _get_int_env("WEB_CONCURRENCY", str(default_workers))
-max_workers = os.getenv("MAX_WORKERS")
-if max_workers:
-    web_concurrency = min(web_concurrency, _get_int_env("MAX_WORKERS", str(web_concurrency)))
-
-workers = min(web_concurrency, 4)
+workers = _get_int_env("WEB_CONCURRENCY", "1")
 worker_class = "uvicorn.workers.UvicornWorker"
 
 # --- Timeouts ---
