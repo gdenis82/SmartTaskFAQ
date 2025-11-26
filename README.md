@@ -63,9 +63,13 @@
    ```
    
 4. Добавьте сеть Docker:
-
    ```bash
     docker network create smart-task-network
+   ```
+   
+5. Запустите сервисы с помощью Docker Compose:
+   ```bash
+   docker-compose up 
    ```
    
 
