@@ -14,7 +14,7 @@ from app.utils import logging, extract_text_from_path
 COLLECTION_NAME = "smarttask_docs"
 
 # Инициализация Chroma
-client = chromadb.PersistentClient(path=settings.CHROMA_PATH)
+chroma_client = chromadb.PersistentClient(path=settings.CHROMA_PATH)
 
 # Embedding function
 if settings.OPENAI_API_KEY and settings.OPENAI_API_KEY.strip():
@@ -31,7 +31,7 @@ else:
     # )
     raise ValueError("OPENAI_API_KEY не задан в настройках.")
 
-collection = client.get_or_create_collection(
+collection = chroma_client.get_or_create_collection(
     name=COLLECTION_NAME,
     embedding_function=embedding_fn,
     metadata={"hnsw:space": "cosine"}
