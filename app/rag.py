@@ -18,8 +18,9 @@ client = chromadb.PersistentClient(path=settings.CHROMA_PATH)
 
 # Embedding function
 if settings.OPENAI_API_KEY and settings.OPENAI_API_KEY.strip():
+    # Use environment variable binding to avoid ChromaDB deprecation warning
     embedding_fn = openai_embedding_function.OpenAIEmbeddingFunction(
-        api_key=settings.OPENAI_API_KEY,
+        api_key_env_var="OPENAI_API_KEY",
         model_name=settings.EMBEDDING_MODEL,
 
     )
