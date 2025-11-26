@@ -22,7 +22,8 @@ async def hash_query(query: str) -> str:
 
 async def get_cache(key: str) -> Optional[Dict[str, Any]]:
     try:
-        cached = await redis_client.get(key)
+        # redis-py client is synchronous; do not await its methods
+        cached = redis_client.get(key)
         return json.loads(cached) if cached else None
     except Exception as e:
         logger.error(f"Redis get failed: {e}")
@@ -30,6 +31,7 @@ async def get_cache(key: str) -> Optional[Dict[str, Any]]:
 
 async def set_cache(key: str, value: Dict[str, Any], ttl: int = 3600):
     try:
-        await redis_client.setex(key, ttl, json.dumps(value, ensure_ascii=False))
+        # redis-py client is synchronous; do not await its methods
+        redis_client.setex(key, ttl, json.dumps(value, ensure_ascii=False))
     except Exception as e:
         logger.error(f"Redis set failed: {e}")
