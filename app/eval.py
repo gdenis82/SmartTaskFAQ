@@ -2,6 +2,7 @@
 Оценка качества RAG.
 Запуск: python -m app.eval
 """
+import asyncio
 import os
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
@@ -26,15 +27,15 @@ TEST_CASES = [
     }
 ]
 
-def evaluate():
+async def evaluate():
     print("🔍 Запуск eval...")
     passed = 0
 
     for i, case in enumerate(TEST_CASES, 1):
         print(f"\nТест {i}: {case['question']}")
         try:
-            context = retrieve_context(case["question"], k=3)
-            answer, sources, _, _ = generate_answer(case["question"], context)
+            context = await retrieve_context(case["question"], k=3)
+            answer, sources, _, _ = await generate_answer(case["question"], context)
 
             print(f"✅ Ответ: {answer[:100]}...")
             if sources:
@@ -54,5 +55,5 @@ def evaluate():
     return passed == len(TEST_CASES)
 
 if __name__ == "__main__":
-    success = evaluate()
+    success = asyncio.run(evaluate())
     sys.exit(0 if success else 1)
