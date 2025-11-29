@@ -17,7 +17,6 @@ COLLECTION_NAME = "smarttask_docs"
 
 # Embedding function
 if settings.OPENAI_API_KEY and settings.OPENAI_API_KEY.strip():
-    # Use environment variable binding to avoid ChromaDB deprecation warning
     embedding_fn = openai_embedding_function.OpenAIEmbeddingFunction(
         api_key_env_var="OPENAI_API_KEY",
         model_name=settings.EMBEDDING_MODEL,
@@ -176,7 +175,7 @@ async def ingest_documents(doc_dir: str = None, file_paths: Optional[List[str]] 
     metadatas = [{"source": c["source"]} for c in all_chunks]
 
     # Перед добавлением в коллекцию — если документ уже существует, удаляем все, что связано с ним
-    # (повторная загрузка документа должна привести к его переиндексации)
+    # повторная загрузка документа должна привести к его переиндексации
     unique_sources = list(set(processed_files))
     for src in unique_sources:
         try:
@@ -186,7 +185,6 @@ async def ingest_documents(doc_dir: str = None, file_paths: Optional[List[str]] 
                 await _chroma_manager.delete_by_source(src)
         except Exception as e:
             logging.error(f"Не удалось проверить/очистить существующие записи для '{src}': {e}")
-            # Продолжаем, попытка добавить заново может помочь выявить проблему
 
     # Уникальные id, чтобы избежать конфликтов при повторных загрузках
     ids = [f"id_{uuid.uuid4()}" for _ in range(len(texts))]
