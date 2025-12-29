@@ -1,4 +1,4 @@
-# SmartTask FAQ — RAG-сервис на FastAPI
+# DeepSearch — RAG-сервис на FastAPI
 
 
   ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
@@ -9,10 +9,9 @@
   ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 
 
-Мини-сервис разработан **исключительно в образовательных целях** и демонстрирует применение RAG (Retrieval-Augmented Generation) для поиска ответов в документации SmartTask.
+Мини-сервис разработан **исключительно в образовательных целях** и демонстрирует применение RAG (Retrieval-Augmented Generation) для поиска ответов в документах.
 
->Сервис **не связан** с официальной командой SmartTask.  
-Ответы формируются **только на основе извлечённых фрагментов документации**.  
+>Ответы формируются **только на основе извлечённых фрагментов документации**.  
 ---
 
 ## ✅ Возможности
@@ -51,8 +50,8 @@
 
 2. Клонируйте репозиторий и перейдите в папку:
    ```bash
-   git clone https://github.com/gdenis82/SmartTaskFAQ.git
-   cd SmartTaskFAQ
+   git clone https://github.com/gdenis82/DeepSearch.git
+   cd DeepSearch
    ```
    
 3. Установите переменные окружения в файле `.env`:
@@ -69,7 +68,7 @@
    
 4. Добавьте сеть Docker:
    ```bash
-    docker network create smart-task-network
+    docker network create deepsearch-network
    ```
    
 5. Запустите сервисы с помощью Docker Compose:
@@ -82,15 +81,11 @@
     ```bash
     docker-compose run --rm backend pytest -v tests/
     `````
-9. Eval для проверки качества ответов
-   ```bash
-   docker-compose run --rm backend python -m app.eval
-   ```
-10. Добавление новых данных в базу знаний (поддерживает фалы `.md`, `.txt`, `.pdf`): [FastAPI Docs](http://localhost:8000/docs#/default/upload_documents_api_v1_documents_post)
+9. Добавление новых данных в базу знаний (поддерживает фалы `.md`, `.txt`, `.pdf`): [FastAPI Docs](http://localhost:8000/docs#/default/upload_documents_api_v1_documents_post)
 
 ## Структура проекта
 ```
-SmartTaskFAQ/
+DeepSearch/
 ├── alembic/                        # Папка для управления миграциями БД (использует SQLAlchemy)
 │   ├── versions/                   # Хранит конкретные файлы миграций (версии схемы БД)
 │   ├── env.py                      # Скрипт настройки окружения Alembic (соединяет модели с миграциями)
@@ -115,7 +110,6 @@ SmartTaskFAQ/
 │   │   └── schemas.py              # Модели (QuestionRequest запрос пользователя)
 │   ├── __init__.py                 # Маркер пакета app
 │   ├── cache.py                    # Логика кэширования (через Redis)
-│   ├── eval.py                     # Скрипты для оценки качества работы RAG/LLM
 │   ├── main.py                     # Точка входа в приложение (создание FastAPI app, подключение роутов)
 │   ├── rag.py                      # Логика RAG (Retrieval Augmented Generation) - поиск контекста и генерация ответа
 │   └── utils.py                    # Вспомогательные утилиты общего назначения
@@ -134,34 +128,4 @@ SmartTaskFAQ/
 ├── README.md                       # Описание проекта, инструкции по установке и запуску
 └── requirements.txt                # Список зависимостей Python
 ```
-
-## Возможные улучшения
-
-- Использовать reverse‑proxy (Nginx/Traefik) перед приложением:
-  - TLS на прокси, проксирование только нужных маршрутов к Gunicorn/Uvicorn.
-
-- Сетевые настройки для продакшена:
-  - Открывать наружу только порт 443/TCP (HTTPS).
-  - Порт 80 использовать только для редиректа 80 → 443 либо оставить закрытым.
-  - БД (PostgreSQL 5432) и Redis (6379) не публиковать наружу; доступ только из приватной сети Docker/кластера.
-
-- HTTPS и криптография:
-  - Валидные сертификаты (Let's Encrypt/ACME), автоматическое обновление.
-  - Современные наборы шифров, отключить устаревшие протоколы (TLS < 1.2).
-  - Включить HSTS с preload при готовности.
-
-- Контроль трафика и защита:
-  - Rate limiting и ограничение соединений на уровне Nginx (limit_req, limit_conn).
-
-- Безопасность окружения и контейнеров:
-  - Не хранить секреты в .env в проде; использовать секреты оркестратора/менеджера секретов.
-  - Запускать контейнер приложения не под root.
-  - Ограничить CORS до доверенных origin.
-
-- Операционка и наблюдаемость:
-  - Метрики/профилирование/логи (Prometheus + exporters + Loki), health‑checks, алерты.
-  - Регулярные бэкапы PostgreSQL с шифрованием и проверкой восстановления.
-
-- Харднинг админ‑инструментов:
-  - Adminer использовать только локально/в тестовой среде; в продакшене отключить или хотя бы защитить базовой авторизацией через Nginx.
 
