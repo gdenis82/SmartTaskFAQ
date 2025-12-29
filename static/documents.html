@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление документами</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        h1, h2 { color: #2c3e50; }
+        .nav { margin-bottom: 20px; }
+        .nav a { color: #3498db; text-decoration: none; }
+        .upload-section { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #dee2e6; }
+        input[type="file"] { margin: 10px 0; }
+        button { background: #3498db; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; }
+        button:hover { background: #2980b9; }
+        button:disabled { background: #bdc3c7; cursor: not-allowed; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #dee2e6; }
+        th { background-color: #f2f2f2; }
+        .status { margin-top: 10px; font-weight: bold; }
+        .success { color: #27ae60; }
+        .error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="/">← Назад к поиску</a>
+    </div>
+
+    <h1>📄 Управление документами</h1>
+
+    <div class="upload-section">
+        <h2>Загрузить новые файлы</h2>
+        <p>Выберите файлы (PDF, TXT, MD) для добавления в базу знаний.</p>
+        <input type="file" id="fileInput" multiple accept=".pdf,.txt,.md">
+        <br>
+        <button id="uploadBtn" onclick="uploadFiles()">Загрузить файлы</button>
+        <div id="uploadStatus" class="status"></div>
+    </div>
+
+    <h2>Список загруженных документов</h2>
+    <div id="loadingDocs">Загрузка списка...</div>
+    <table id="docsTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>Имя файла</th>
+                <th>Дата загрузки</th>
+                <th>Размер</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody id="docsList"></tbody>
+    </table>
+
+    <div id="pagination" style="margin-top: 20px; display: none; align-items: center; gap: 15px;">
+        <button id="prevBtn" onclick="changePage(-1)">← Назад</button>
+        <span id="pageInfo">Страница 1 из 1</span>
+        <button id="nextBtn" onclick="changePage(1)">Вперед →</button>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const pageSize = 10;
+
+        async function loadDocuments(page = 1) {
+            currentPage = page;
+            const loadingDiv = document.getElementById("loadingDocs");
+            const table = document.getElementById("docsTable");
+            const list = document.getElementById("docsList");
+            const pagination = document.getElementById("pagination");
+
+            try {
+                const res = await fetch(`/api/v1/documents?page=${page}&size=${pageSize}`);
+                const data = await res.json();
+
+                if (!res.ok) throw new Error("Не удалось загрузить список");
+
+                list.innerHTML = "";
+                if (data.items.length === 0) {
+                    loadingDiv.innerText = "Документы не найдены.";
+                    loadingDiv.style.display = "block";
+                    table.style.display = "none";
+                    pagination.style.display = "none";
+                    return;
+                }
+
+                data.items.forEach(doc => {
+                    const row = document.createElement("tr");
+                    const date = new Date(doc.upload_date).toLocaleString('ru-RU');
+                    const size = (doc.size / 1024).toFixed(1) + " KB";
+                    
+                    row.innerHTML = `
+                        <td><a href="/docs_files/${doc.name}" target="_blank">${doc.name}</a></td>
+                        <td>${date}</td>
+                        <td>${size}</td>
+                        <td>
+                            <button onclick="deleteDocument('${doc.name}')" style="background: #e74c3c; padding: 5px 10px; font-size: 0.8em;">Удалить</button>
+                        </td>
+                    `;
+                    list.appendChild(row);
+                });
+
+                loadingDiv.style.display = "none";
+                table.style.display = "table";
+                
+                // Pagination info
+                if (data.pages > 1) {
+                    pagination.style.display = "flex";
+                    document.getElementById("pageInfo").innerText = `Страница ${data.page} из ${data.pages}`;
+                    document.getElementById("prevBtn").disabled = data.page <= 1;
+                    document.getElementById("nextBtn").disabled = data.page >= data.pages;
+                } else {
+                    pagination.style.display = "none";
+                }
+
+            } catch (e) {
+                loadingDiv.innerHTML = `<span class="error">Ошибка: ${e.message}</span>`;
+            }
+        }
+
+        function changePage(delta) {
+            loadDocuments(currentPage + delta);
+        }
+
+        async function deleteDocument(filename) {
+            if (!confirm(`Вы уверены, что хотите удалить файл "${filename}"?`)) return;
+
+            try {
+                const res = await fetch(`/api/v1/documents/${filename}`, {
+                    method: "DELETE"
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    loadDocuments(currentPage);
+                } else {
+                    alert("Ошибка при удалении: " + (data.detail || "Неизвестная ошибка"));
+                }
+            } catch (e) {
+                alert("Ошибка при удалении: " + e.message);
+            }
+        }
+
+        async function uploadFiles() {
+            const input = document.getElementById("fileInput");
+            const btn = document.getElementById("uploadBtn");
+            const status = document.getElementById("uploadStatus");
+
+            if (input.files.length === 0) {
+                status.innerHTML = '<span class="error">Выберите хотя бы один файл</span>';
+                return;
+            }
+
+            const formData = new FormData();
+            for (let i = 0; i < input.files.length; i++) {
+                formData.append("files", input.files[i]);
+            }
+
+            btn.disabled = true;
+            status.innerHTML = "<em>Загрузка и обработка... Это может занять время.</em>";
+            status.className = "status";
+
+            try {
+                const res = await fetch("/api/v1/documents", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.detail || "Ошибка при загрузке");
+
+                status.innerHTML = `<span class="success">Успешно! Добавлено фрагментов: ${data.added_chunks}. Обработано файлов: ${data.processed_files.length}</span>`;
+                input.value = "";
+                loadDocuments();
+            } catch (e) {
+                status.innerHTML = `<span class="error">Ошибка: ${e.message}</span>`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // Загрузить список при открытии страницы
+        loadDocuments();
+    </script>
+</body>
+</html>
